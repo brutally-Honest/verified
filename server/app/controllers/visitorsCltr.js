@@ -41,15 +41,24 @@ function generate(data) {
   return OTP;
 }
 
-visitorsCltr.checkPhone=async(req,res)=>{
-  try{
-    const ph=await Visitor.findOne({visitorPhoneNumber:req.params.vph})
-    if(ph) return res.json(ph.visitorPhoto)
-    return res.status(404).json("First Time Visitor")
-  }catch(e){
-    res.status(500).json(e)
+visitorsCltr.checkPhone = async (req, res) => {
+  try {
+    const ph = await Visitor.findOne({ visitorPhoneNumber: req.params.vph });
+    if (ph) {
+      const getObjectParams = {
+        Bucket: S3_BUCKET_NAME,
+        Key: ph.visitorPhoto,
+      };
+      const getCommand = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
+      ph.visitorPhoto = url;
+      return res.json({visitorName:ph.visitorName,visitorPhoto:ph.visitorPhoto});
+    }
+    return res.status(404).json("First Time Visitor");
+  } catch (e) {
+    res.status(500).json(e);
   }
-}
+};
 
 visitorsCltr.getTypes = async (req, res) => {
   try {
@@ -81,23 +90,25 @@ visitorsCltr.newVisitor = async (req, res) => {
     "unit",
     "visitorType",
     "group",
-    // "image"
   ]);
-//if (prevImage) then dont upload image
-  // console.log(body);
-  const imageName = `${req.file.originalname}${Date.now()}`;
-  const putCommand = new PutObjectCommand({
-    Bucket: S3_BUCKET_NAME,
-    Key: imageName,
-    Body: req.file.buffer,
-    ContentType: req.file.mimetype,
-  });
+  console.log(req.body,req.file);
+  let imageName,putCommand
+ if(!req.user.visitorImage){
+    imageName = `${req.file.originalname}${Date.now()}`;
+    putCommand = new PutObjectCommand({
+     Bucket: S3_BUCKET_NAME,
+     Key: imageName,
+     Body: req.file.buffer,
+     ContentType: req.file.mimetype,
+    });
+  }
 
   try {
-  //  if(!visitor)
-   await s3.send(putCommand);
+     if(!req.user.visitorImage)
+    {await s3.send(putCommand);
+    delete req.user.visitorImage}
     const visitor = new Visitor(body);
-    visitor.visitorPhoto = imageName;
+    visitor.visitorPhoto = imageName||req.user.visitorImage;
     visitor.status = "arrived";
     await visitor.save();
     res.json(visitor);
@@ -214,14 +225,16 @@ visitorsCltr.verifyOtp = async (req, res) => {
 
 visitorsCltr.myVisitors = async (req, res) => {
   try {
-    const query={
+    const query = {
       unit: req.params.unit,
       status: "arrived",
-    }
-    const myVisitors = await Visitor.find(query).limit(req.query.limit)
-    .skip(req.query.skip).sort({createdAt:'desc'})
-    const count=await Visitor.countDocuments(query)
-    console.log("got my Visitors");
+    };
+    const myVisitors = await Visitor.find(query)
+      .limit(req.query.limit)
+      .skip(req.query.skip)
+      .sort({ createdAt: "desc" });
+    const count = await Visitor.countDocuments(query);
+
     for (const myVisitor of myVisitors) {
       if (myVisitor.visitorPhoto) {
         const getObjectParams = {
@@ -233,7 +246,7 @@ visitorsCltr.myVisitors = async (req, res) => {
         myVisitor.visitorPhoto = url;
       }
     }
-    res.json({myVisitors,total:count});
+    res.json({ myVisitors, total: count });
   } catch (e) {
     res.status(500).json(e);
   }
@@ -274,8 +287,8 @@ visitorsCltr.visitorsToday = async (req, res) => {
     const visitors = await Visitor.find(query)
       .limit(req.query.limit)
       .skip(req.query.skip)
-      .sort({createdAt:'desc'})
-    const count=await Visitor.countDocuments(query)
+      .sort({ createdAt: "desc" });
+    const count = await Visitor.countDocuments(query);
     for (const myVisitor of visitors) {
       if (myVisitor.visitorPhoto) {
         const getObjectParams = {

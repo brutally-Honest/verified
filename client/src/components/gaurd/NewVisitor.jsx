@@ -8,14 +8,14 @@ import { axiosInstance } from "../../config/axios";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { CamerOff, CameraOn, SearchIcon } from "../../assets/Svg";
-import Webcam from 'react-webcam'
+import Webcam from "react-webcam";
 import toast from "react-hot-toast";
 
 export const NewVisitor = () => {
   const navigate = useNavigate();
   const { userState } = useContext(UserContext);
   const { visitorTypes } = userState;
-  const [phoneResponse,setPhoneResponse]=useState({text:"",data:null})
+  const [phoneResponse, setPhoneResponse] = useState({ text: "", data: null });
   const socket = useContext(SocketContext);
   const imgRef = useRef();
   const [acknowledge, setAcknowledged] = useState({});
@@ -25,7 +25,7 @@ export const NewVisitor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [img, setImg] = useState({});
   const [openCamera, setOpenCamera] = useState(false);
-  const [visitorPhoto,setVisitorPhoto]=useState(null)
+  const [visitorPhoto, setVisitorPhoto] = useState(null);
 
   const formik = useFormik({
     initialValues: {
@@ -41,14 +41,10 @@ export const NewVisitor = () => {
       //visitorData is to be uploaded to db
       formData.group = userState.group._id;
       formData.image = { body: img, type: "file" };
-      // if(!_.isEmpty(phoneResponse.data)){
-      //   console.log("vImage from previous visit");
-      //   formData.image=phoneResponse.data
-      // }
+      formData.imageUrl = phoneResponse.data;
+
       socket.emit("permission", formData);
-      
-      // if(phoneResponse.text==="First Time Visitor")
-      // {
+
       const visitorData = new FormData();
       visitorData.append("visitorPhoto", img);
       visitorData.append("visitorType", formik.values.visitorType);
@@ -60,10 +56,10 @@ export const NewVisitor = () => {
       visitorData.append("block", formik.values.block);
       visitorData.append("unit", formik.values.unit);
       visitorData.append("group", formData.group);
-    // }
-    try {
+
+      try {
         setIsLoading(true);
-        const { data } = await axiosInstance.post(
+        await axiosInstance.post(
           "/visitors/new",
           visitorData,
           {
@@ -71,29 +67,34 @@ export const NewVisitor = () => {
           }
         );
         setIsLoading(false);
-        console.log(data,"Uploaded to dB");
-        resetForm();
-        imgRef.current.value = "";
         toast.success("Successfully Sent Request");
+        resetForm();
+        setPhoneResponse({ text: "", data: null });
+        setImg({})
+        imgRef.current && (imgRef.current.value = "");
         localStorage.setItem("currentVisitor", JSON.stringify(formData));
+        localStorage.setItem("cvImage", phoneResponse.data);
       } catch (e) {
         setIsLoading(false);
-        console.log(e.response);
-        toast.error(e.response.data?.errors[0]?.msg);
+        console.log(e);
+        if(e.response.data.errors)toast.error(e.response.data.errors[0].msg)
       }
     },
   });
 
-const checkPhone=async()=>{
-  if(String(formik.values.visitorPhoneNumber).length===10)
-  try{
-    const {data}=await axiosInstance.get(`/visitors/checkPhone/${formik.values.visitorPhoneNumber}`)
-    console.log(data);
-    setPhoneResponse({text:'Visitor Found',data})
-  }catch(e){
-    setPhoneResponse({text:e.response.data,data:null})
-  }
-}
+  const checkPhone = async () => {
+    if (String(formik.values.visitorPhoneNumber).length === 10)
+      try {
+        const { data } = await axiosInstance.get(
+          `/visitors/checkPhone/${formik.values.visitorPhoneNumber}`
+        );
+        formik.setFieldValue("visitorName", data.visitorName);
+        setPhoneResponse({ text:'', data: data.visitorPhoto });
+      } catch (e) {
+        setPhoneResponse({ text: e.response.data, data: null });
+        formik.setFieldValue("visitorName", "");
+      }
+  };
 
   //join videocall
   const joinVC = useCallback(() => {
@@ -171,7 +172,6 @@ const checkPhone=async()=>{
       setVideoCalled(JSON.parse(localStorage.getItem("currentVisitor")));
     }
   }, []);
-
 
   return (
     <>
@@ -310,7 +310,7 @@ const checkPhone=async()=>{
         </div>
       )}
       {/* initial form  */}
-      {!vC &&_.isEmpty(acknowledge) && _.isEmpty(videoCalled) && (
+      {!vC && _.isEmpty(acknowledge) && _.isEmpty(videoCalled) && (
         <div className="h-screen mt-10 flex items-start justify-evenly">
           <div className="flex h-[590px] ">
             <form
@@ -354,24 +354,33 @@ const checkPhone=async()=>{
                   {formik.errors.visitorName}
                 </div>
                 <div className="flex">
-                <input
-                  type="number"
-                  name="visitorPhoneNumber"
-                  placeholder="Phone"
-                  value={formik.values.visitorPhoneNumber}
-                  onChange={formik.handleChange}
-                  className={`${
-                    formik.errors.visitorPhoneNumber ? "outline-red-400" : ""
-                  } p-1 font-medium w-[220px] mt-2 mb-2 ml-6 rounded-md text-black`}
-                />
-                <div className="flex items-center" onClick={checkPhone} >
-                <div className={` relative right-8 flex justify-center items-center ${String(formik.values.visitorPhoneNumber).length===10?"visible":"invisible"} z-10 p-0 h-[30px]`}><SearchIcon/></div>
-                </div>
+                  <input
+                    type="number"
+                    name="visitorPhoneNumber"
+                    placeholder="Phone"
+                    value={formik.values.visitorPhoneNumber}
+                    onChange={formik.handleChange}
+                    className={`${
+                      formik.errors.visitorPhoneNumber ? "outline-red-400" : ""
+                    } p-1 font-medium w-[220px] mt-2 mb-2 ml-6 rounded-md text-black`}
+                  />
+                  <div className="flex items-center" onClick={checkPhone}>
+                    <div
+                      className={` relative right-8 flex justify-center items-center ${
+                        String(formik.values.visitorPhoneNumber).length === 10
+                          ? "visible"
+                          : "invisible"
+                      } z-10 p-0 h-[30px]`}
+                    >
+                      <SearchIcon />
+                    </div>
+                  </div>
                 </div>
                 <div className="h-7 text-sm text-red-500">
-                  {formik.errors.visitorPhoneNumber}{phoneResponse.text}
+                  {formik.errors.visitorPhoneNumber}
+                  <span className="font-medium">{phoneResponse.text}</span>
                 </div>
-                {
+                {!phoneResponse.data && (
                   <input
                     type="file"
                     accept="image/*"
@@ -384,9 +393,9 @@ const checkPhone=async()=>{
                       });
                       reader.readAsDataURL(e.target.files[0]);
                     }}
-                    className={`p-1 font-medium  mt-2 mb-2 pl-6`}
+                    className={`p-1 font-medium my-2 pl-6 outline-none`}
                   />
-                }
+                )}
 
                 <div className="m-2 mt-5 flex">
                   <div className="mr-1">

@@ -76,14 +76,21 @@ const newVisitorSchema = {
   },
   visitorPhoto: {
     custom: {
-      options:async (value, { req }) => {
-        // const visitor=await Visitor.findOne({visitorPhoneNumber:req.body.visitorPhoneNumber})
-        // if(visitor) return true
+      options: async (value, { req }) => {
+        const visitor = await Visitor.findOne({
+          visitorPhoneNumber: req.body.visitorPhoneNumber,
+        });
+        if (visitor) {
+          req.user.visitorImage = visitor.visitorPhoto;
+          return true;
+        }
         if (!req.file) throw new Error("Image should be uploaded!");
         if (
-          !(req.file.mimetype == "image/jpeg" ||
-          req.file.mimetype == "image/png" ||
-          req.file.mimetype == "image/jpg")
+          !(
+            req.file.mimetype == "image/jpeg" ||
+            req.file.mimetype == "image/png" ||
+            req.file.mimetype == "image/jpg"
+          )
         )
           throw new Error("Upload image in .jpg, .jpeg, or .png format");
         else return true;
@@ -92,8 +99,8 @@ const newVisitorSchema = {
   },
 };
 
-const visitorPermissionResponse={
-permission: {
+const visitorPermissionResponse = {
+  permission: {
     notEmpty: { errorMessage: "permission is required", bail: true },
     isBoolean: { errorMessage: "Invalid Format" },
   },
@@ -101,30 +108,33 @@ permission: {
     notEmpty: { errorMessage: "Response is required", bail: true },
     isBoolean: { errorMessage: "Response must be boolean" },
   },
-  approvedBy:{
+  approvedBy: {
     notEmpty: { errorMessage: "ApprovedBy is required", bail: true },
-    isMongoId:{errorMessage:"Invalid MongoId",bail:true},
+    isMongoId: { errorMessage: "Invalid MongoId", bail: true },
   },
-  unit:{
+  unit: {
     notEmpty: { errorMessage: "Unit is required", bail: true },
-    isMongoId:{errorMessage:"Invalid MongoId"},
+    isMongoId: { errorMessage: "Invalid MongoId" },
   },
-  visitorPhoneNumber:{
+  visitorPhoneNumber: {
     notEmpty: { errorMessage: "Phone number should not be empty", bail: true },
     isInt: { errorMessage: "Phone Number must be 10 digit number", bail: true },
     isLength: {
       errorMessage: "Phone Number must be 10 digit number",
       options: { min: 10, max: 10 },
     },
-    custom:{
-      options:async(value,{req})=>{
-        const visitor=await Visitor.findOne({visitorPhoneNumber:value,unit:req.body.unit})
-        if(!visitor) throw new Error('Visitor not Found')
-        else return true
-      }
-    }
-  }
-}
+    custom: {
+      options: async (value, { req }) => {
+        const visitor = await Visitor.findOne({
+          visitorPhoneNumber: value,
+          unit: req.body.unit,
+        });
+        if (!visitor) throw new Error("Visitor not Found");
+        else return true;
+      },
+    },
+  },
+};
 
 const newVisitorMemberSchema = {
   visitors: {

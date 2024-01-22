@@ -28,11 +28,15 @@ export const CurrentVisitors = () => {
 
   useEffect(() => {
     if (!_.isEmpty(userState.visitorPermission)) {
-      // if(visitorPermission.blob)
-      const reader = new FileReader();
-      reader.readAsDataURL(userState.visitorPermission.blob);
-      reader.onloadend = () => setVImg(reader.result);
-      //else setVImg(visitorPermisssion.vImage)
+      console.log(userState.visitorPermission);
+      if (_.isEmpty(userState.visitorPermission.imageUrl)) {
+        const reader = new FileReader();
+        reader.readAsDataURL(userState.visitorPermission.blob);
+        reader.onloadend = () => setVImg(reader.result);
+      } else {
+        const vImage = userState.visitorPermission.imageUrl;
+        setVImg(vImage);
+      }
     }
   }, [userState.visitorPermission]);
 
@@ -46,22 +50,27 @@ export const CurrentVisitors = () => {
             </div>
           ) : (
             <div className=" bg-gradient-to-l from-black via-cyan-800 to-emerald-500  border-2 border-gray-600 flex flex-col items-center  rounded-md shadow-md px-[6dvw] py-5 ">
-              <div>
-                <img
-                  src={vImg}
-                  width={300}
-                  height={200}
-                  className=" border-2 shadow-md"
-                />
-              </div>
+                <div>
+                  <img
+                    src={vImg}
+                    width={300}
+                    height={200}
+                    className=" border-2 shadow-md"
+                  />
+                </div>
+              
               <div className="p-2">
-                <span className="  p-1  font-medium text-white kanit">NAME :</span>
+                <span className="  p-1  font-medium text-white kanit">
+                  NAME :
+                </span>
                 <span className="font-semibold text-lg p-1 text-white">
                   {userState.visitorPermission?.visitorName}
                 </span>
               </div>
               <div className="p-2">
-                <span className=" p-1 font-medium text-white  kanit">PHONE NUMBER :</span>
+                <span className=" p-1 font-medium text-white  kanit">
+                  PHONE NUMBER :
+                </span>
                 <span className="font-semibold text-lg p-1 text-white">
                   {userState.visitorPermission?.visitorPhoneNumber}
                 </span>
@@ -74,7 +83,7 @@ export const CurrentVisitors = () => {
                 <div className="flex ">
                   <button
                     className={`m-1 p-1  px-2 rounded  border-black font-semibold  ${
-                      video ? "bg-green-600  ":"bg-white"
+                      video ? "bg-green-600  " : "bg-white"
                     }`}
                     onClick={() => setVideo(true)}
                   >
@@ -82,7 +91,7 @@ export const CurrentVisitors = () => {
                   </button>
                   <button
                     className={`m-1 p-1 px-2  rounded border-black  font-semibold  ${
-                      !video ? "bg-red-600  ":"bg-white"
+                      !video ? "bg-red-600  " : "bg-white"
                     }`}
                     onClick={() => setVideo(false)}
                   >

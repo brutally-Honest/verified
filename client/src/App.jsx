@@ -61,7 +61,6 @@ function App() {
 
   //for resident
   const handleRequest = useCallback((visitorData) => {
-    console.log("Permission Request received", visitorData);
     toast("New Visitor Alert", { duration: 5000 });
 
     //call api and get image if not uploaded (case for previous visitor)
