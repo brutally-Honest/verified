@@ -4,7 +4,8 @@ import { useContext, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export const GroupDetails = () => {
-  const { userState:{group} } = useContext(UserContext);
+  const { userState } = useContext(UserContext);
+  const {group}=userState
   const { role } = jwtDecode(localStorage.getItem("token"));
 
   return (

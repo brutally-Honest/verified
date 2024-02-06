@@ -9,31 +9,31 @@ export const RecentGroup = () => {
       {latestGroup && (
         <div className="flex text-black rounded bg-gradient-to-l from-indigo-200 via-neutral-300 to-stone-300 p-1 shadow">
           <div className="flex flex-col font-medium text-base border-r">
-            <div className="p-1 ">Name</div>
-            <div className="p-1 ">Admin</div>
-            <div className="p-1 ">Blocks</div>
-            <div className="p-1 ">Units</div>
-            <div className="p-1 ">Gaurd</div>
-            <div className="p-1 ">Members</div>
+            <div className="p-2 ">Name</div>
+            <div className="p-2 ">Admin</div>
+            <div className="p-2 ">Blocks</div>
+            <div className="p-2 ">Units</div>
+            <div className="p-2 ">Gaurd</div>
+            <div className="p-2 ">Members</div>
           </div>
-          <div className="flex flex-col uppercase roboto-slab font-extrabold text-base">
-            <div className="p-1 px-1 text-center">{latestGroup.groupName}</div>
-            <div className="p-1 px-1 text-center">
+          <div className="flex flex-col uppercase font-semibold text-base">
+            <div className="p-2 px-1 text-center">{latestGroup.groupName}</div>
+            <div className="p-2 px-1 text-center">
               {latestGroup.groupAdmin.userAuthId.userName}
             </div>
-            <div className="p-1 px-1 text-center">{latestGroup.blocks?.length}</div>
-            <div className="p-1 px-1 text-center">
+            <div className="p-2 px-1 text-center">{latestGroup.blocks?.length}</div>
+            <div className="p-2 px-1 text-center">
               {latestGroup.blocks?.reduce((acc, cv) => {
                 acc += cv?.blockId.units.length;
                 return acc;
               }, 0)}
             </div>
-            <div className="p-1 px-1 text-center">
+            <div className="p-2 px-1 text-center">
               {latestGroup.gaurd
                 ? latestGroup.gaurd.userAuthId.userName
-                : "No Gaurd"}
+                : <span className="text-red-500">No Gaurd</span>}
             </div>
-            <div className="p-1 px-1 text-center">{latestGroup.members.length}</div>
+            <div className="p-2 px-1 text-center">{latestGroup.members.length}</div>
           </div>
         </div>
       )}

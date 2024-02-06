@@ -12,7 +12,7 @@ export const TodaysVisitors = () => {
   const [daysVisitors, setDaysVisitors] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState("");
-  const elementsPerPage = 6;
+  const elementsPerPage = 5;
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading,setLoading]=useState(false)

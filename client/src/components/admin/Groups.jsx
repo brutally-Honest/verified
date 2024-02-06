@@ -90,7 +90,7 @@ export const Groups = () => {
                     to={`/gaurd/new`}
                     state={{ group: e._id, groupAdmin: e.groupAdmin._id }}
                   >
-                    Create One!
+                    {" "}Create One!
                   </Link>
                 )}{" "}
               </>

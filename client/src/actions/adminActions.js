@@ -54,13 +54,13 @@ export const startCreateGaurd = (
 ) => {
   return async (dispatch) => {
     try {
-      console.log("inside action");
-      const gaurdResponse = await axiosInstance.post("/groups/createGaurd", gaurdData);
-      dispatch(setGaurd(gaurdResponse.data));
+      const {data} = await axiosInstance.post("/groups/createGaurd", gaurdData);
+      console.log(data);
+      dispatch(setGaurd(data));
       resetForm();
       navigate("/groups/all");
     } catch (e) {
-      console.log(e.response?.data.errors[0].msg);
+      console.log(e.response);
       setServerError(e.response.data?.errors[0]?.msg);
     }
   };

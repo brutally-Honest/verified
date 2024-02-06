@@ -70,7 +70,7 @@ export const Verification = () => {
           <h2 className="p-2 text-lg font-medium">KEY</h2>
           <div>
             <PinField
-              className=" w-[50px] text-black h-[50px] text-3xl m-[2px] text-center outline-none rounded-[5px] border-[3px] focus:border-[3px] focus:border-indigo-500 focus:text-indigo-500"
+              className=" md:w-[45px] sm:w-[38px] text-black md:h-[50px] text-3xl m-[2px] text-center outline-none rounded-[5px] border-[3px] focus:border-[3px] focus:border-indigo-500 focus:text-indigo-500"
               validate={/^[a-zA-Z0-9]$/}
               length={6}
               onChange={setKey}
@@ -85,7 +85,7 @@ export const Verification = () => {
         <h2 className="p-2 text-lg font-medium">OTP</h2>
         <div>
           <PinField
-            className=" w-[50px] text-black h-[50px] text-3xl m-[2px] text-center outline-none rounded-[5px] border-[3px] focus:border-[3px] focus:border-indigo-500 focus:text-indigo-500"
+            className=" md:w-[45px] sm:w-[38px] text-black md:h-[50px] text-3xl m-[2px] text-center outline-none rounded-[5px] border-[3px] focus:border-[3px] focus:border-indigo-500 focus:text-indigo-500"
             validate={/^[a-zA-Z0-9]$/}
             length={6}
             onChange={setOTP}

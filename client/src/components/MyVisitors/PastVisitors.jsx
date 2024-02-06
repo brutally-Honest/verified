@@ -94,7 +94,6 @@ export const PastVisitors = () => {
             <CustomTable
               columns={columns}
               data={myPastVisitors}
-              width={500}
               actions={{ name: "View" }}
               setOpen={setIsOpen}
               setValue={setValue}
@@ -102,6 +101,7 @@ export const PastVisitors = () => {
               totalPages={totalPages}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
+              width={500}
             />
           ) : (
             <div className="flex justify-center font-thin text-xl">

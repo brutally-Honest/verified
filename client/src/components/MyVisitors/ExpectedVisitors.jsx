@@ -38,6 +38,7 @@ export const ExpectedVisitors = () => {
           "/visitors/new/member",
           formData
         );
+        // console.log(data);
         setExpectedVisitors([...expectedVisitors, ...data]);
         setLoading(false);
         socket.emit("expectedVisitor", ...data);
@@ -67,6 +68,7 @@ export const ExpectedVisitors = () => {
   const columns = [
     { header: "Name", accessor: "visitorName" },
     { header: "Phone", accessor: "visitorPhoneNumber" },
+    { header: "Key", accessor: "key" },
   ];
 
   const visitorsExpected = useMemo(
@@ -76,6 +78,7 @@ export const ExpectedVisitors = () => {
           id: e._id,
           visitorName: e.visitorName,
           visitorPhoneNumber: e.visitorPhoneNumber,
+          key:e.key
         };
       }),
     [expectedVisitors]
@@ -99,7 +102,7 @@ export const ExpectedVisitors = () => {
 
   return (
     <div className="md:mt-[80px] sm:mt-auto">
-      <div className="flex justify-center rounded-md bg-indigo-500/40 md:mx-[30dvw] sm:mx-[15dvw] shadow-md z-10">
+      <div className="flex justify-center rounded-md bg-indigo-500/40 md:mx-[20dvw] sm:mx-[15dvw] shadow-md z-10">
         <form
           className="flex flex-col p-2"
           name="visitorType"

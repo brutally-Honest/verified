@@ -15,6 +15,7 @@ export const Payments = () => {
   const [isLoading2, setIsLoading2] = useState(false);
   const [myPayments,setMyPayments]=useState([])
 
+  console.log(monthlyAmount,yearlyAmount);
   const handleSubscribe = async (duration, amount,setLoading) => {
     setLoading(true);
     const stripe = await loadStripe(stripePublicKey);
@@ -92,7 +93,7 @@ export const Payments = () => {
             <h1 className="font-thin text-3xl text-white">Monthly</h1>
             <h2 className="font-medium text-xl text-white p-1">₹{monthlyAmount}</h2>
             <Button
-              text={`${myPayments?myPayments[myPayments.length-1]?.plan==='month'?'Cancel':'Subscribe':'Subscribe'}`}
+              text={`${myPayments.length>0?myPayments[myPayments.length-1]?.plan==='month'&&'Cancel/Change Plan':'Subscribe'}`}
               loading={isLoading}
               submitHandler={() => handleSubscribe("month", monthlyAmount,setIsLoading)}
               style={`p-2 m-1 rounded border-2 font-semibold ${
@@ -100,11 +101,11 @@ export const Payments = () => {
               } border-sky-400 bg-white  text-blue-800 hover:text-white hover:bg-indigo-500`}
             />
           </div>
-          <div className={`bg-gradient-to-bl from-purple-200 via-current to-pink-600 m-3 p-3 text-gray-800 rounded shadow-md ${!_.isEmpty(myPayments)?(myPayments[myPayments.length-1]?.plan!=='month'&&'hidden'):''}`}>
+          <div className={`bg-gradient-to-bl from-purple-200 via-current to-pink-600 m-3 p-3 text-gray-800 rounded shadow-md ${!_.isEmpty(myPayments)?(myPayments[myPayments.length-1]?.plan!=='year'&&'hidden'):''}`}>
             <h1 className="font-thin text-3xl text-white">Yearly</h1>
             <h2 className="font-medium text-xl text-white p-1">₹{yearlyAmount}</h2>
             <Button
-              text={`${myPayments&&myPayments[myPayments.length-1]?.plan!=='year'?'Change Plan':'Subscribe'}`}
+              text={`${myPayments.length>0?(myPayments[myPayments.length-1]?.plan==='year'&&'Cancel/Change Plan'):'Subscribe'}`}
               loading={isLoading2}
               submitHandler={() => handleSubscribe("year", yearlyAmount,setIsLoading2)}
               style={`p-2 m-1 rounded border-2 font-semibold ${

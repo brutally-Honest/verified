@@ -21,7 +21,8 @@ export const CurrentVisitors = () => {
     socket.emit("permission acknowledged", result);
     userDispatch({ type: "CLEAR_CURRENT_VISITOR" });
     if (video) {
-      socket.emit("joinVideoCall");
+      // socket.emit("joinVideoCall");
+      socket.emit("joinVideoCall",userState.user._id);
       navigate("/videoCall");
     }
   };

@@ -57,6 +57,7 @@ export const ExpectedVisitorsGaurd = () => {
 
   return (
     <div className="flex flex-col  mb-1 items-center p-2">
+      <div className="text-xl">Expected Visitors</div>
       {_.isEmpty(gaurdState.visitors) ? (
         <>
           <h2 className="font-2xl font-semibold">No Visitors Yet</h2>

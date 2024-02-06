@@ -43,7 +43,7 @@ export const NewVisitor = () => {
       formData.image = { body: img, type: "file" };
       formData.imageUrl = phoneResponse.data;
 
-      socket.emit("permission", formData);
+      
 
       const visitorData = new FormData();
       visitorData.append("visitorPhoto", img);
@@ -59,7 +59,7 @@ export const NewVisitor = () => {
 
       try {
         setIsLoading(true);
-        await axiosInstance.post(
+        const {data}=await axiosInstance.post(
           "/visitors/new",
           visitorData,
           {
@@ -68,12 +68,15 @@ export const NewVisitor = () => {
         );
         setIsLoading(false);
         toast.success("Successfully Sent Request");
+
+        socket.emit("permission", formData);
+
+        localStorage.setItem("currentVisitor", JSON.stringify(formData));
+        localStorage.setItem("cvImage", phoneResponse.data?phoneResponse.data:data.visitorPhoto);//set image url in localStorage
         resetForm();
         setPhoneResponse({ text: "", data: null });
         setImg({})
         imgRef.current && (imgRef.current.value = "");
-        localStorage.setItem("currentVisitor", JSON.stringify(formData));
-        localStorage.setItem("cvImage", phoneResponse.data);
       } catch (e) {
         setIsLoading(false);
         console.log(e);
@@ -88,6 +91,7 @@ export const NewVisitor = () => {
         const { data } = await axiosInstance.get(
           `/visitors/checkPhone/${formik.values.visitorPhoneNumber}`
         );
+        console.log(data);
         formik.setFieldValue("visitorName", data.visitorName);
         setPhoneResponse({ text:'', data: data.visitorPhoto });
       } catch (e) {
@@ -98,7 +102,8 @@ export const NewVisitor = () => {
 
   //join videocall
   const joinVC = useCallback(() => {
-    socket.emit("joinVideoCall");
+    // socket.emit("joinVideoCall");
+    socket.emit("joinVideoCall",localStorage.getItem('videoCalled'));
     navigate("/videoCall");
   }, [socket]);
 

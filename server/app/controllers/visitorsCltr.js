@@ -7,6 +7,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const VisitorType = require("../models/visitorType-model");
 const Visitor = require("../models/visitor-model");
 const _ = require("lodash");
+const Gaurd = require("../models/gaurd-model");
 const {
   TWILIO_SERVICE_SID,
   TWILIO_AUTH_TOKEN,
@@ -43,7 +44,10 @@ function generate(data) {
 
 visitorsCltr.checkPhone = async (req, res) => {
   try {
-    const ph = await Visitor.findOne({ visitorPhoneNumber: req.params.vph });
+    const ph = await Visitor.findOne({
+      visitorPhoneNumber: req.params.vph,
+      group:req.body.group
+    });
     if (ph) {
       const getObjectParams = {
         Bucket: S3_BUCKET_NAME,
@@ -52,7 +56,10 @@ visitorsCltr.checkPhone = async (req, res) => {
       const getCommand = new GetObjectCommand(getObjectParams);
       const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
       ph.visitorPhoto = url;
-      return res.json({visitorName:ph.visitorName,visitorPhoto:ph.visitorPhoto});
+      return res.json({
+        visitorName: ph.visitorName,
+        visitorPhoto: ph.visitorPhoto,
+      });
     }
     return res.status(404).json("First Time Visitor");
   } catch (e) {
@@ -91,26 +98,34 @@ visitorsCltr.newVisitor = async (req, res) => {
     "visitorType",
     "group",
   ]);
-  console.log(req.body,req.file);
-  let imageName,putCommand
- if(!req.user.visitorImage){
+  // console.log(req.body,req.file);
+  let imageName, putCommand;
+  if (!req.user.visitorImage) {
     imageName = `${req.file.originalname}${Date.now()}`;
     putCommand = new PutObjectCommand({
-     Bucket: S3_BUCKET_NAME,
-     Key: imageName,
-     Body: req.file.buffer,
-     ContentType: req.file.mimetype,
+      Bucket: S3_BUCKET_NAME,
+      Key: imageName,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
     });
   }
 
   try {
-     if(!req.user.visitorImage)
-    {await s3.send(putCommand);
-    delete req.user.visitorImage}
+    if (!req.user.visitorImage) {
+      await s3.send(putCommand);
+      delete req.user.visitorImage;
+    }
     const visitor = new Visitor(body);
-    visitor.visitorPhoto = imageName||req.user.visitorImage;
+    visitor.visitorPhoto = imageName || req.user.visitorImage;
     visitor.status = "arrived";
     await visitor.save();
+    const getObjectParams = {
+      Bucket: S3_BUCKET_NAME,
+      Key: visitor.visitorPhoto,
+    };
+    const getCommand = new GetObjectCommand(getObjectParams);
+    const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
+    visitor.visitorPhoto = url;
     res.json(visitor);
   } catch (e) {
     res.status(500).json(e);

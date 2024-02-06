@@ -1,12 +1,65 @@
-import { useSelector } from "react-redux";
-import Chart from "react-apexcharts";
-import  CustomTable  from "../ui/CustomTable";
 import _ from "lodash";
+import { useSelector } from "react-redux";
+import CustomTable from "../ui/CustomTable";
+import { axiosInstance } from "../../config/axios";
+import { useEffect, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export const Revenue = () => {
   const groupAdmins = useSelector((state) => state.admin.users.groupAdmins);
   const allPayments = useSelector((state) => state.admin.payments);
+  const [chartData, setChartData] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const payments = async () => {
+    try {
+      const { data } = await axiosInstance.get("/stats/payments");
+      setChartData(data.monthlyRevenue);
+      setTotalRevenue(...data.totalRevenue);
+    } catch (e) {
+      console.log(e.response);
+    }
+  };
+  useEffect(() => {
+    payments();
+  }, []);
 
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top'
+      },
+    },
+  };
+  const labels=chartData?.map(e=>e._id)
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Revenue/month in Rupees',
+        data: [...chartData.map((e) => e.monthlyRevenue)],
+        backgroundColor: 'rgba(150, 45, 200, 0.5)',
+      },
+    ],
+  };
   const columns = [
     { header: "Payer", accessor: "payer" },
     { header: "Group", accessor: "group" },
@@ -20,113 +73,26 @@ export const Revenue = () => {
       id: e._id,
       payer: groupAdmins?.find((ele) => ele._id === e.payer)?.userAuthId
         ?.userName,
-      group: groupAdmins?.find((ele) => ele.group._id === e.group)?.group
-        .groupName,
+      group: groupAdmins?.find((ele) => ele?.group?._id === e?.group)?.group
+        ?.groupName,
       amount: e.amount,
       plan: e.plan,
       startDate: new Date(e.createdAt).toDateString(),
       endDate: new Date(e.endsAt).toDateString(),
     };
   });
-  const chartConfig = {
-    type: "line",
-    height: 240,
-    series: [
-      {
-        name: "Revenue",
-        data:[allPaymentsData.map(e=>e.amount).reduce((acc,cv)=>{acc+=cv;return acc},0)]
-      },
-    ],
-    options: {
-      chart: {
-        toolbar: {
-          show: false,
-        },
-      },
-      title: {
-        show: "",
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      colors: ["#31e060"],
-      stroke: {
-        lineCap: "round",
-        curve: "smooth",
-      },
-      markers: {
-        size: 0,
-      },
-      xaxis: {
-        axisTicks: {
-          show: false,
-        },
-        axisBorder: {
-          show: false,
-        },
-        labels: {
-          style: {
-            colors: "#616161",
-            fontSize: "12px",
-            fontFamily: "inherit",
-            fontWeight: 400,
-          },
-        },
-        categories: [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ],
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: "#616161",
-            fontSize: "12px",
-            fontFamily: "inherit",
-            fontWeight: 400,
-          },
-        },
-      },
-      grid: {
-        show: true,
-        borderColor: "#dddddd",
-        strokeDashArray: 5,
-        xaxis: {
-          lines: {
-            show: true,
-          },
-        },
-        padding: {
-          top: 5,
-          right: 20,
-        },
-      },
-      fill: {
-        opacity: 0.8,
-      },
-      tooltip: {
-        theme: "dark",
-      },
-    },
-  };
+
   return (
     <div className="h-screen">
       <div className=" flex flex-col items-center">
         <h1 className="text-center font-semibold text-2xl">
           REVENUE STATISTICS
         </h1>
+        <div className="p-2 ">
+          Total Revenue -<strong>{totalRevenue.total}</strong>
+        </div>
         <div className="p-2 w-[50vw]">
-          <Chart {...chartConfig} />
+          <Bar options={options} data={data} />
         </div>
         <div className="flex justify-center">
           {allPayments && (

@@ -10,7 +10,7 @@ import { axiosInstance } from "./config/axios";
 import { jwtDecode } from "jwt-decode";
 import { startGetAllData } from "./actions/adminActions";
 import { SocketContext, socket } from "./context/SocketContext";
-import { PacmanLoader } from "react-spinners";
+import { PuffLoader } from "react-spinners";
 import toast, { Toaster } from "react-hot-toast";
 
 function App() {
@@ -62,13 +62,10 @@ function App() {
   //for resident
   const handleRequest = useCallback((visitorData) => {
     toast("New Visitor Alert", { duration: 5000 });
-
-    //call api and get image if not uploaded (case for previous visitor)
     const blob = new Blob([visitorData.image.body], {
       type: visitorData.image.type,
     });
     visitorData.blob = blob;
-    //vImage=api result
     userDispatch({ type: "CURRENT_VISITOR", payload: visitorData });
   }, []);
 
@@ -98,7 +95,7 @@ function App() {
       {loading ? (
         <div className="h-screen w-screen">
           <div className="flex justify-center items-center h-full">
-            <PacmanLoader size={50} />
+            <PuffLoader size={90} speedMultiplier={1.5} color="#6238cf"/>
           </div>
         </div>
       ) : (

@@ -79,6 +79,7 @@ const newVisitorSchema = {
       options: async (value, { req }) => {
         const visitor = await Visitor.findOne({
           visitorPhoneNumber: req.body.visitorPhoneNumber,
+          group:req.body.group
         });
         if (visitor) {
           req.user.visitorImage = visitor.visitorPhoto;

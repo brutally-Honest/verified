@@ -27,12 +27,11 @@ export const NewGroup = () => {
       dispatch(startCreateGroup(groupData, setServerErrors, navigate));
     } else {
       try {
-        console.log(groupData,'b4');
         const newGroup = await axiosInstance.post(
           "/groups/register",
           groupData
         );
-        console.log(newGroup.data,'after');
+        console.log(newGroup.data);
         userDispatch({ type: "SET_USER'S_GROUP", payload: newGroup.data });
         navigate("/dashboard");
       } catch (e) {

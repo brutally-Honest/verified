@@ -8,6 +8,7 @@ import { Modal } from "../ui/Modal2";
 import { jwtDecode } from "jwt-decode";
 import { startCreateGaurd } from "../../actions/adminActions";
 import { useDispatch,useSelector } from "react-redux";
+import toast from 'react-hot-toast'
 
 export const CreateGaurd = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -33,7 +34,6 @@ export const CreateGaurd = () => {
         if (role === "admin") {
           formData.group = location.state.group;
           formData.groupAdmin = location.state.groupAdmin;
-          console.log(formData);
           dispatch(
             startCreateGaurd(formData, resetForm, navigate, setServerError)
           );
@@ -47,6 +47,7 @@ export const CreateGaurd = () => {
           userDispatch({ type: "SET_GAURD", payload: gaurdResponse.data });
           resetForm();
           navigate("/myGroup/details");
+          toast.success(`Gaurd Account Created`)
         }
         setIsOpen(false)
       } catch (e) {

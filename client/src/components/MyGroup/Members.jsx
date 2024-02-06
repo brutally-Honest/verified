@@ -29,8 +29,8 @@ export const Members = () => {
   const [currentPagePending, setCurrentPagePending] = useState(1);
 
   const totalPagesApproved = Math.ceil(approved?.length / elementsPerPage);
-  const totalPagesUnitPending = Math.ceil(unitPending?.length / elementsPerPage) + 1;
-  const totalPagesPending = Math.ceil(pending?.length / elementsPerPage) + 1;
+  const totalPagesUnitPending = Math.ceil(unitPending?.length / elementsPerPage) ;
+  const totalPagesPending = Math.ceil(pending?.length / elementsPerPage) ;
 
   const membersApproved = useMemo(
     () =>
