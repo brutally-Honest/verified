@@ -1,5 +1,6 @@
 const VisitorType = require("../models/visitorType-model");
 const Visitor = require("../models/visitor-model");
+const Gaurd=require('../models/gaurd-model')
 const _ = require("lodash");
 const { getUrl, uploadImage } = require("../aws/s3");
 const { sendSMS } = require("../twilio/sms");
@@ -20,11 +21,14 @@ function generate(data) {
 
 visitorsCltr.checkPhone = async (req, res) => {
   try {
+    const { group } = await Gaurd.findOne({ userAuthId: req.user.id });
     const ph = await Visitor.findOne({
       visitorPhoneNumber: req.params.vph,
-      group: req.body.group,
+      group,
     });
+    console.log(ph);
     if (ph) {
+      if(!ph.visitorPhoto) return res.status(500).json({visitorName: ph.visitorName,message:"NO Image"})
       ph.visitorPhoto = await getUrl(ph.visitorPhoto);
       return res.json({
         visitorName: ph.visitorName,
