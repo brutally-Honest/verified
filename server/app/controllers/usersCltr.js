@@ -98,71 +98,44 @@ usersCltr.login = async (req, res) => {
 
 usersCltr.myAccount = async (req, res) => {
   let user;
+  const select={
+    password: 0,
+    createdAt: 0,
+    updatedAt: 0,
+    __v: 0,
+  }
+  const groupAdminAndMemberFields=[{
+    path: "userAuthId",
+    model: "UserAuth",
+    select: { createdAt: 0, updatedAt: 0, __v: 0, password: 0 },
+  },
+  {
+    path: "property",
+    model: "Unit",
+    select: { unitNumber: 1, block: 1 },
+    populate: { path: "block", model: "Block", select: { blockName: 1 } },
+  },]
   try {
     const { role } = await UserAuth.findById(req.user.id);
     if (role === "admin" ) {
       user = await UserAuth.findOne(
         { _id: req.user.id },
-        {
-          password: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          __v: 0,
-        }
+        select
       );
     } else if (role === "groupAdmin") {
       user = await GroupAdmin.findOne(
         { userAuthId: req.user.id },
-        {
-          password: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          __v: 0,
-        }
-      ).populate([
-        {
-          path: "userAuthId",
-          model: "UserAuth",
-          select: { createdAt: 0, updatedAt: 0, __v: 0, password: 0 },
-        },
-        {
-          path: "property",
-          model: "Unit",
-          select: { unitNumber: 1, block: 1 },
-          populate: { path: "block", model: "Block", select: { blockName: 1 } },
-        },
-      ]);
+        select
+      ).populate(groupAdminAndMemberFields);
     } else if (role === "member") {
       user = await Member.findOne(
         { userAuthId: req.user.id },
-        {
-          password: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          __v: 0,
-        }
-      ).populate([
-        {
-          path: "userAuthId",
-          model: "UserAuth",
-          select: { createdAt: 0, updatedAt: 0, __v: 0, password: 0 },
-        },
-        {
-          path: "property",
-          model: "Unit",
-          select: { unitNumber: 1, block: 1 },
-          populate: { path: "block", model: "Block", select: { blockName: 1 } },
-        },
-      ]);
+        select
+      ).populate(groupAdminAndMemberFields);
     } else if (role === "gaurd") {
       user = await Gaurd.findOne(
         { userAuthId: req.user.id },
-        {
-          password: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          __v: 0,
-        }
+        select
       ).populate("userAuthId", [
         "_id",
         "userName",
@@ -180,34 +153,22 @@ usersCltr.myAccount = async (req, res) => {
 usersCltr.allUsers = async (req, res) => {
   const allUsers = {};
   try {
-    // allUsers.users = await UserAuth.find(
-    //   { role: "user" },
-    //   { password: 0, createdAt: 0, updatedAt: 0, __v: 0 }
-    // );
+    const select={ createdAt: 0, updatedAt: 0, __v: 0 }
+    const fields=["userAuthId",
+    ["_id", "userName", "email", "userPhoneNumber"],
+    "group",]
     allUsers.groupAdmins = await GroupAdmin.find(
       {},
-      { createdAt: 0, updatedAt: 0, __v: 0 }
-    ).populate([
-      "userAuthId",
-      ["_id", "userName", "email", "userPhoneNumber"],
-      "group",
-    ]);
+      select
+    ).populate(fields);
     allUsers.members = await Member.find(
       {},
-      { createdAt: 0, updatedAt: 0, __v: 0 }
-    ).populate([
-      "userAuthId",
-      ["_id", "userName", "email", "userPhoneNumber"],
-      "group",
-    ]);
+      select
+    ).populate(fields);
     allUsers.gaurds = await Gaurd.find(
       {},
-      { createdAt: 0, updatedAt: 0, __v: 0 }
-    ).populate([
-      "userAuthId",
-      ["_id", "userName", "email", "userPhoneNumber"],
-      "group",
-    ]);
+      select
+    ).populate(fields);
     res.json(allUsers);
   } catch (e) {
     res.status(500).json(e);
