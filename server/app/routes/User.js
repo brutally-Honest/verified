@@ -9,7 +9,7 @@ const {
   login,
   updateAccount,
   groupAdminUnit
-} = require("../helpers/userValidation");
+} = require("../validations/userValidation");
 const usersCltr = require("../controllers/usersCltr");
 
 router.post("/register/groupAdmin",checkSchema(adminRegister),validate,usersCltr.registerAdmin);

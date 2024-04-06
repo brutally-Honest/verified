@@ -14,7 +14,7 @@ const {
   newVisitorMemberSchema,
   keyVerificationSchema,
   otpVerificationSchema,
-} = require("../helpers/visitorValidation");
+} = require("../validations/visitorValidation");
 const visitorsCltr = require("../controllers/visitorsCltr");
 
 router.get("/types", authenticateUser, visitorsCltr.getTypes);

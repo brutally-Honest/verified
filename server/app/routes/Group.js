@@ -12,7 +12,7 @@ const {
   changeMemberStatusAndUpdateUnit,
   approveMemberSchema,
   acceptMemberSchema
-} = require("../helpers/groupValidation");
+} = require("../validations/groupValidation");
 const groupsCltr = require("../controllers/groupsCltr");
 
 router.post(

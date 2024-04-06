@@ -4,7 +4,7 @@ const Group = require("../models/group-model");
 const Block = require("../models/block-model");
 const Unit = require("../models/unit-model");
 
-const { adminRegister } = require("../helpers/userValidation");
+const { adminRegister } = require("./userValidation");
 
 const visitorTypeSchema = {
   type: {
