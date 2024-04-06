@@ -20,7 +20,7 @@ export const NewVisitor = () => {
   const imgRef = useRef();
   const [acknowledge, setAcknowledged] = useState({});
   const [vC, setVC] = useState(false);
-  const [permission, setPermission] = useState("");
+  const [permission, setPermission] = useState(false);
   const [videoCalled, setVideoCalled] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [img, setImg] = useState({});
@@ -95,8 +95,9 @@ export const NewVisitor = () => {
         formik.setFieldValue("visitorName", data.visitorName);
         setPhoneResponse({ text:'', data: data.visitorPhoto });
       } catch (e) {
-        setPhoneResponse({ text: e.response.data, data: null });
-        formik.setFieldValue("visitorName", "");
+        setPhoneResponse({ text: e.response.data?.message || e.response.data, data: null });
+        // setPhoneResponse({ text: e.response.data, data: null });
+        formik.setFieldValue("visitorName", e.response.data?.visitorName||"");
       }
   };
 
@@ -124,6 +125,7 @@ export const NewVisitor = () => {
 
   //response api call -> Setting response from member to dB
   const newVisitor = async (visitorData) => {
+    console.log(visitorData);
     try {
       const { data } = await axiosInstance.put(
         "/visitors/permission-response",
@@ -134,6 +136,9 @@ export const NewVisitor = () => {
       console.log(e.response);
       if (e.response.data.errors) toast.error(e.response.data?.errors[0].msg);
     }
+    localStorage.removeItem("videoCalled");
+    localStorage.removeItem("currentVisitor");
+    localStorage.removeItem("cvImage");
   };
 
   //without video
@@ -152,17 +157,16 @@ export const NewVisitor = () => {
   };
 
   //with video
-  const handleSubmitVisitorAfterVideo = (e) => {
+  const handleSubmitVisitorAfterVideo = async (e) => {
     e.preventDefault();
     const visitorDetails = JSON.parse(localStorage.getItem("currentVisitor"));
     visitorDetails.approvedBy = localStorage.getItem("videoCalled");
     visitorDetails.permission = permission;
     visitorDetails.response = true;
-    newVisitor(visitorDetails);
+    
+    await newVisitor(visitorDetails);
     setVideoCalled({});
-    localStorage.removeItem("videoCalled");
-    localStorage.removeItem("currentVisitor");
-    localStorage.removeItem("cvImage");
+   
   };
 
   //socket
