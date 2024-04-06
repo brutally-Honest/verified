@@ -1,44 +1,20 @@
-const {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const VisitorType = require("../models/visitorType-model");
 const Visitor = require("../models/visitor-model");
 const _ = require("lodash");
-const Gaurd = require("../models/gaurd-model");
-const {
-  TWILIO_SERVICE_SID,
-  TWILIO_AUTH_TOKEN,
-  TWILIO_ACCOUNT_SID,
-  TWILIO_FROM,
-  TWILIO_TO,
-  S3_BUCKET_NAME,
-  S3_BUCKET_REGION,
-  S3_ACCESS_KEY,
-  S3_SECRET_KEY,
-} = process.env;
-const client = require("twilio")(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+const { getUrl,uploadImage } = require("../aws/s3");
+const { sendSMS } = require("../twilio/sms");
 
-const s3 = new S3Client({
-  credentials: {
-    accessKeyId: S3_ACCESS_KEY,
-    secretAccessKey: S3_SECRET_KEY,
-  },
-  region: S3_BUCKET_REGION,
-});
 const visitorsCltr = {};
 
 function generate(data) {
   let string;
   if (data === "key")
-    string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  if (data === "otp") string = "0123456789";
-  let OTP = "";
-  for (let i = 0; i < 6; i++) {
-    OTP += string[Math.floor(Math.random() * string.length)];
-  }
+  string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+if (data === "otp") string = "0123456789";
+let OTP = "";
+for (let i = 0; i < 6; i++) {
+  OTP += string[Math.floor(Math.random() * string.length)];
+}
   return OTP;
 }
 
@@ -49,14 +25,8 @@ visitorsCltr.checkPhone = async (req, res) => {
       group:req.body.group
     });
     if (ph) {
-      const getObjectParams = {
-        Bucket: S3_BUCKET_NAME,
-        Key: ph.visitorPhoto,
-      };
-      const getCommand = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
-      ph.visitorPhoto = url;
-      return res.json({
+        ph.visitorPhoto = await getUrl(ph.visitorPhoto);
+        return res.json({
         visitorName: ph.visitorName,
         visitorPhoto: ph.visitorPhoto,
       });
@@ -99,48 +69,34 @@ visitorsCltr.newVisitor = async (req, res) => {
     "group",
   ]);
   // console.log(req.body,req.file);
-  let imageName, putCommand;
-  if (!req.user.visitorImage) {
-    imageName = `${req.file.originalname}${Date.now()}`;
-    putCommand = new PutObjectCommand({
-      Bucket: S3_BUCKET_NAME,
-      Key: imageName,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-    });
-  }
-
-  try {
-    if (!req.user.visitorImage) {
-      await s3.send(putCommand);
-      delete req.user.visitorImage;
-    }
-    const visitor = new Visitor(body);
-    visitor.visitorPhoto = imageName || req.user.visitorImage;
-    visitor.status = "arrived";
-    await visitor.save();
-    const getObjectParams = {
-      Bucket: S3_BUCKET_NAME,
-      Key: visitor.visitorPhoto,
+  let imageName;
+  if (!req.user.visitorImage) imageName = `${req.file.originalname}${Date.now()}`;
+    
+    try {
+      if (!req.user.visitorImage) {
+        await uploadImage(imageName,req.file.buffer,req.file.mimetype)
+        delete req.user.visitorImage;
+      }
+      const visitor = new Visitor(body);
+      visitor.visitorPhoto = imageName || req.user.visitorImage;
+      visitor.status = "arrived";
+      await visitor.save();
+        visitor.visitorPhoto = await getUrl(visitor.visitorPhoto);
+        res.json(visitor);
+      } catch (e) {
+        res.status(500).json(e);
+      }
     };
-    const getCommand = new GetObjectCommand(getObjectParams);
-    const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
-    visitor.visitorPhoto = url;
-    res.json(visitor);
-  } catch (e) {
-    res.status(500).json(e);
-  }
-};
-
-visitorsCltr.response = async (req, res) => {
-  const body = _.pick(req.body, [
-    "unit",
-    "visitorPhoneNumber",
-    "permission",
-    "approvedBy",
-  ]);
-  try {
-    const visitor = await Visitor.findOneAndUpdate(
+    
+    visitorsCltr.response = async (req, res) => {
+      const body = _.pick(req.body, [
+        "unit",
+        "visitorPhoneNumber",
+        "permission",
+        "approvedBy",
+      ]);
+      try {
+        const visitor = await Visitor.findOneAndUpdate(
       { unit: body.unit, visitorPhoneNumber: body.visitorPhoneNumber },
       {
         permission: body.permission,
@@ -205,13 +161,8 @@ visitorsCltr.verifyKey = async (req, res) => {
     visitor.otp.data = generate("otp");
     visitor.otp.expiresIn = Date.now() + 1 * 60 * 1000;
     await visitor.save();
-    const msgOptions = {
-      body: visitor.otp.data,
-      // to: `+91${visitor.visitorPhoneNumber}`, // actuall visitor Number
-      to: TWILIO_TO,
-      from: TWILIO_FROM, // From a valid Twilio number
-    };
-    const message = await client.messages.create(msgOptions);
+    const message = await sendSMS(visitor.otp.data);
+    if(!message) throw new Error("Unable to send Message!!!")
     res.json(message);
   } catch (e) {
     res.status(500).json(e);
@@ -230,7 +181,7 @@ visitorsCltr.verifyOtp = async (req, res) => {
     }
     if (!(visitor.otp.data === body.otp)) return res.json("Invalid OTP!!");
     visitor.status = "arrived";
-
+    
     await visitor.save();
     return res.json("OTP Verified");
   } catch (e) {
@@ -240,25 +191,20 @@ visitorsCltr.verifyOtp = async (req, res) => {
 
 visitorsCltr.myVisitors = async (req, res) => {
   try {
+    // console.log(s3);
     const query = {
       unit: req.params.unit,
       status: "arrived",
     };
     const myVisitors = await Visitor.find(query)
-      .limit(req.query.limit)
-      .skip(req.query.skip)
-      .sort({ createdAt: "desc" });
+    .limit(req.query.limit)
+    .skip(req.query.skip)
+    .sort({ createdAt: "desc" });
     const count = await Visitor.countDocuments(query);
 
     for (const myVisitor of myVisitors) {
       if (myVisitor.visitorPhoto) {
-        const getObjectParams = {
-          Bucket: S3_BUCKET_NAME,
-          Key: myVisitor.visitorPhoto,
-        };
-        const getCommand = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
-        myVisitor.visitorPhoto = url;
+        myVisitor.visitorPhoto =  await getUrl(myVisitor.visitorPhoto);
       }
     }
     res.json({ myVisitors, total: count });
@@ -300,25 +246,19 @@ visitorsCltr.visitorsToday = async (req, res) => {
       status: "arrived",
     };
     const visitors = await Visitor.find(query)
-      .limit(req.query.limit)
-      .skip(req.query.skip)
-      .sort({ createdAt: "desc" });
+    .limit(req.query.limit)
+    .skip(req.query.skip)
+    .sort({ createdAt: "desc" });
     const count = await Visitor.countDocuments(query);
     for (const myVisitor of visitors) {
       if (myVisitor.visitorPhoto) {
-        const getObjectParams = {
-          Bucket: S3_BUCKET_NAME,
-          Key: myVisitor.visitorPhoto,
-        };
-        const getCommand = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
-        myVisitor.visitorPhoto = url;
+          myVisitor.visitorPhoto = await getUrl(myVisitor.visitorPhoto);;
+        }
       }
-    }
-
-    res.json({ visitors, total: count });
-  } catch (e) {
-    res.status(500).json(e);
+      
+      res.json({ visitors, total: count });
+    } catch (e) {
+      res.status(500).json(e);
   }
 };
 

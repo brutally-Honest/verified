@@ -10,7 +10,7 @@ const startSocket=()=>{
         },
     });
     
-console.log("Socket Connection Initialized",io);
+console.log("Socket Connection Initialized");
 let users = [];
 const toggles = [];
 let i = 0;
