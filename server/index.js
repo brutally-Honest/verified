@@ -1,4 +1,6 @@
 require('dotenv').config()
+const {envChecks}=require('./app/utils/envChecks')
+envChecks()
 const {server}=require("./app/app")
 const {startSocket}=require('./app/socket/index')
 startSocket()
