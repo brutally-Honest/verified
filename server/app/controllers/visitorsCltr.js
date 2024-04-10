@@ -19,7 +19,7 @@ function generate(data) {
   return OTP;
 }
 
-visitorsCltr.checkPhone = async (req, res) => {
+visitorsCltr.checkPhone = async (req, res,next) => {
   try {
     const { group } = await Gaurd.findOne({ userAuthId: req.user.id });
     const ph = await Visitor.findOne({
@@ -37,11 +37,12 @@ visitorsCltr.checkPhone = async (req, res) => {
     }
     return res.status(404).json("First Time Visitor");
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.getTypes = async (req, res) => {
+visitorsCltr.getTypes = async (req, res,next) => {
   try {
     const types = await VisitorType.find(
       {},
@@ -49,21 +50,23 @@ visitorsCltr.getTypes = async (req, res) => {
     );
     res.json(types);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.newType = async (req, res) => {
+visitorsCltr.newType = async (req, res,next) => {
   try {
     const type = new VisitorType({ type: req.body.type });
     await type.save();
     res.json(type);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.newVisitor = async (req, res) => {
+visitorsCltr.newVisitor = async (req, res,next) => {
   const body = _.pick(req.body, [
     "visitorName",
     "visitorPhoneNumber",
@@ -89,11 +92,12 @@ visitorsCltr.newVisitor = async (req, res) => {
     visitor.visitorPhoto = await getUrl(visitor.visitorPhoto);
     res.json(visitor);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.response = async (req, res) => {
+visitorsCltr.response = async (req, res,next) => {
   const body = _.pick(req.body, [
     "unit",
     "visitorPhoneNumber",
@@ -113,11 +117,12 @@ visitorsCltr.response = async (req, res) => {
     //send image for this visitor
     res.json(visitor);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.newVisitorMember = async (req, res) => {
+visitorsCltr.newVisitorMember = async (req, res,next) => {
   let expected = [];
   const body = _.pick(req.body, [
     "block",
@@ -149,11 +154,12 @@ visitorsCltr.newVisitorMember = async (req, res) => {
     });
     res.json(expected);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.verifyKey = async (req, res) => {
+visitorsCltr.verifyKey = async (req, res,next) => {
   const body = _.pick(req.body, ["key", "visitorId", "visitorPhoneNumber"]);
   try {
     const visitor = await Visitor.findOne({
@@ -170,11 +176,12 @@ visitorsCltr.verifyKey = async (req, res) => {
     if (!message) throw new Error("Unable to send Message!!!");
     res.json(message);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.verifyOtp = async (req, res) => {
+visitorsCltr.verifyOtp = async (req, res,next) => {
   const body = _.pick(req.body, ["otp", "visitorId"]);
   try {
     const visitor = await Visitor.findOne({
@@ -190,11 +197,12 @@ visitorsCltr.verifyOtp = async (req, res) => {
     await visitor.save();
     return res.json("OTP Verified");
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.myVisitors = async (req, res) => {
+visitorsCltr.myVisitors = async (req, res,next) => {
   try {
     // console.log(s3);
     const query = {
@@ -214,11 +222,12 @@ visitorsCltr.myVisitors = async (req, res) => {
     }
     res.json({ myVisitors, total: count });
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.expectedVisitors = async (req, res) => {
+visitorsCltr.expectedVisitors = async (req, res,next) => {
   try {
     let ev;
     if (req.user.role === "gaurd") {
@@ -235,11 +244,12 @@ visitorsCltr.expectedVisitors = async (req, res) => {
     }
     res.json(ev);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
-visitorsCltr.visitorsToday = async (req, res) => {
+visitorsCltr.visitorsToday = async (req, res,next) => {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date();
@@ -263,7 +273,8 @@ visitorsCltr.visitorsToday = async (req, res) => {
 
     res.json({ visitors, total: count });
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
