@@ -8,7 +8,7 @@ The members can also request the gaurd for a video call to view the visitors. Vi
 - Frontend - <b>React</b> 
 - Database - <b>MongoDB</b>  
 - Storage - <b>AWS S3</b>  
-- Authentication - <b>JWT(Json Web Tokens)</b>  
+- Authentication - <b>JWT</b>  
 - Real-Time Communication - <b>Socket.io</b>  
 - Video Call Implementation - <b>WebRTC</b>  
 - Payment Integration - <b>Stripe</b>  
