@@ -18,7 +18,8 @@ statisticsCltr.paymentStats = async (req, res) => {
     ]);
     res.json({totalRevenue,monthlyRevenue})
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
@@ -35,7 +36,8 @@ statisticsCltr.userStats = async (req, res) => {
       ]);
       res.json({totalUsers,roleCount})
     } catch (e) {
-      res.status(500).json(e);
+      // res.status(500).json(e);
+      next(e)
     }
   };
 

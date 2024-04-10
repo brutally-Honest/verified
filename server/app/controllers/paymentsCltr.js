@@ -101,7 +101,8 @@ paymentsCltr.myPayments = async (req, res) => {
     const payments = await Payment.find({ payer: req.params.id });
     res.json(payments);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 

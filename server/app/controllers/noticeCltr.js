@@ -9,7 +9,8 @@ noticesCltr.create = async (req, res) => {
     await notice.save();
     res.json(notice);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 
@@ -18,7 +19,8 @@ noticesCltr.allNotices = async (req, res) => {
     const notices = await Notice.find({group:req.params.id});
     res.json(notices);
   } catch (e) {
-    res.status(500).json(e);
+    // res.status(500).json(e);
+    next(e)
   }
 };
 

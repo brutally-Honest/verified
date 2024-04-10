@@ -45,7 +45,7 @@ usersCltr.registerAdmin = async (req, res) => {
   }
 };
 
-usersCltr.registerMember = async (req, res) => {
+usersCltr.registerMember = async (req, res,next) => {
   const body = _.pick(req.body, [
     "email",
     "password",
@@ -77,7 +77,8 @@ usersCltr.registerMember = async (req, res) => {
     });
     res.status(201).json( member);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -92,7 +93,8 @@ usersCltr.login = async (req, res) => {
     const token = jwt.sign(tokenData, process.env.JWT_KEY, { expiresIn: "2d" });
     return res.json(token);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -146,7 +148,8 @@ usersCltr.myAccount = async (req, res) => {
     }
     res.json(user);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -171,7 +174,8 @@ usersCltr.allUsers = async (req, res) => {
     ).populate(fields);
     res.json(allUsers);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -183,7 +187,8 @@ usersCltr.edit = async (req, res) => {
     });
     res.json(user);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -215,7 +220,8 @@ usersCltr.addGroupAdminUnit = async (req, res) => {
     ]);
     res.json(groupAdmin);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -245,7 +251,8 @@ usersCltr.addMemberUnit=async(req,res)=>{
     ]);
     res.json(member);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 }
 

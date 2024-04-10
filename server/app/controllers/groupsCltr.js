@@ -98,7 +98,8 @@ groupsCltr.register = async (req, res) => {
     ]);
     res.status(201).json(group);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -191,7 +192,8 @@ groupsCltr.myAccount = async (req, res) => {
       });
     res.json(group);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -266,7 +268,8 @@ groupsCltr.all = async (req, res) => {
       });
     res.json(groups);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 //only for admin
@@ -279,7 +282,8 @@ groupsCltr.changeStatus = async (req, res) => {
     );
     res.json(group);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -312,7 +316,8 @@ groupsCltr.createGaurd = async (req, res) => {
     });
     res.json(gaurd);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -342,7 +347,8 @@ groupsCltr.approveMember = async (req, res) => {
     );
     res.json({ unit, member });
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
@@ -381,7 +387,8 @@ groupsCltr.memberStatusAndUnit = async (req, res) => {
     ]);
     res.json(member);
   } catch (e) {
-    res.status(500).json(e);
+    next(e)
+    // res.status(500).json(e);
   }
 };
 
