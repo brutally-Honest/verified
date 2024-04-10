@@ -19,7 +19,7 @@ function generateCode() {
   }
   return Code;
 } 
-
+//
 groupsCltr.register = async (req, res) => {
   const body = _.pick(req.body, [
     "groupName",
