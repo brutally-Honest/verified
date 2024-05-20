@@ -1,7 +1,8 @@
 import express from "express";
 const router = express.Router();
 import { User, UserDetails } from "./model.js";
-import { validate, registerSchema, loginSchema } from "./validations.js";
+import { registerSchema, loginSchema } from "./validations.js";
+import { validate } from "../../middlewares/validate.js";
 import {
   generateEncryptedPassword,
   generateToken,

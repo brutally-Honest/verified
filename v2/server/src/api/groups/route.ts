@@ -2,19 +2,20 @@ import express from "express";
 const router = express.Router();
 import {  Group, Unit } from "./model.js";
 import { generateCode } from "../../utils/helpers.js";
+import { validate } from "../../middlewares/validate.js";
+import { groupSchema } from "./validations.js";
+import { groupValidation } from "../../middlewares/logicValidation.js";
 const source = "->groupsRoute";
 
-//TODO  - Validation
-router.post("/create", async (req, res, next) => {
+router.post("/create",validate(groupSchema),groupValidation,async (req, res, next) => {
   try {
-    const { name, phoneNumber, units } = req.body;
-    // const groupAdmin=res.locals.groupAdmin
-    // if(!groupAdmin) return res.status(500).json({messsage:""})
+    const { name, phoneNumber, units,admin } = req.body;
+
     const group = new Group({
       name,
       phoneNumber,
       groupCode: generateCode(),
-      // groupAdmin
+      admin
     });
 
     units.forEach(
