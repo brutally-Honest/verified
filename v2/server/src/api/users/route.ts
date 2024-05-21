@@ -21,42 +21,37 @@ router.post(
   async (req, res, next) => {
     try {
       const { name, email, password, phoneNumber, role } = req.body;
-      const usersCount = await User.countDocuments();
+      const uCount = await User.countDocuments();
+      const uDCount=await UserDetails.countDocuments()
       const user = new User({
         name,
         email,
         password: await generateEncryptedPassword(password),
         phoneNumber,
-        role,
       });
-
-      if (usersCount === 0) user.role = "admin";
-      await user.save();
-      const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password;
-
-      if (!user) return res.status(500).json({message:"Account Creation Failed!"});
-
-      if (user.role === "admin") {
+      
+      
+      const userDetails=new UserDetails({role})
+      if (uCount === 0 && uDCount===0) userDetails.role = "admin";
+      
+      if (!user||!userDetails) return res.status(500).json({message:"Account Creation Failed!"});
+      
+      if (userDetails.role === "admin" || userDetails.role==="groupAdmin") {
+        await user.save();
+        if(userDetails.role==="admin") userDetails.status="approved"
+        userDetails.userId=user._id
+        await userDetails.save()
+        const userWithoutPassword=await userDetails.populate({path:"userId",select:"-password",model:"User"})
         res.status(201).json({
           message: "User Successfully created!",
           data: userWithoutPassword,
         });
-      } else if (user.role === "groupAdmin") {
-        const userDetails = new UserDetails({
-          userId: user._id,
-        });
+      } else if (userDetails.role === "member") {
+        userDetails.applyingTo=res.locals?.groupId
+        await user.save();
+        userDetails.userId=user._id
         await userDetails.save();
-        res.status(201).json({
-          message: "Account Successfully created!",
-          data: userWithoutPassword,
-        });
-      } else if (user.role === "member") {
-        const userDetails = new UserDetails({
-          userId: user._id,
-          applyingTo: res.locals?.groupId,
-        });
-        await userDetails.save();
+        const userWithoutPassword=await userDetails.populate({path:"userId",select:"-password",model:"User"})
         res.status(201).json({
           message: "Account Successfully created!",
           data: userWithoutPassword,
@@ -78,11 +73,13 @@ router.post(
         next(
           new APIError(500, "Internal Server Error - User Not Found", source)
         );
-
-      const tokenData: { id: string; role: string } = {
-        id: user._id,
-        role: user.role,
-      };
+        const userDetails = await UserDetails.findOne({ userId: user._id });
+        if (!userDetails)
+          return res.status(404).json({ message: "User not Found" });
+        const tokenData: { id: string; role: string } = {
+          id: userDetails._id.toString(),
+          role: userDetails.role as string,
+        };
       const token = generateToken(tokenData);
       if (!token) next(new APIError(500, "Token Generation Failed", source));
 

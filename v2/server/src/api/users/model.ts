@@ -6,13 +6,13 @@ const userSchema = new Schema(
     phoneNumber: Number,
     email: String,
     password: String,
-    role: { type: String, enum: ["admin", "groupAdmin", "member", "gaurd"] },
   },
   { timestamps: true }
 );
 
 const userDetailsSchema = new Schema(
   {
+    role: { type: String, enum: ["admin", "groupAdmin", "member", "gaurd"] },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     group: { type: Schema.Types.ObjectId, ref: "Group" },
     property: { type: Schema.Types.ObjectId, ref: "Unit" },

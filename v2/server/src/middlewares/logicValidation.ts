@@ -3,6 +3,7 @@ import { Group } from "../api/groups/model.js";
 import { NextFunction, Request, Response } from "express";
 import { APIError } from "../utils/errors.js";
 import { checkPassword } from "../utils/helpers.js";
+import chalk from "chalk";
 const source = "logicValidation->";
 
 export const registerValidation = async (
@@ -23,6 +24,7 @@ export const registerValidation = async (
         return res.status(400).json({ message: "Invalid Group Code" });
       res.locals.groupId = group._id;
     }
+    console.log(chalk.greenBright(`Logically correct`));
     return next();
   } catch (error) {
     console.log(`${source} Logic Validation Failed`);
