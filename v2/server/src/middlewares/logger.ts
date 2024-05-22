@@ -6,6 +6,6 @@ export const logger = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(chalk.bgBlueBright.bold(`[REQUEST] : ${req.url} `));
+  console.log(chalk.bgBlueBright(`[/${req.method}]`),":",chalk.bgWhiteBright.blackBright.bold(`${req.url}`));
   next();
 };

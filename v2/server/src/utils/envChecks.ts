@@ -2,7 +2,7 @@ const {env}=process.env
 
 export const envs:{[property:string]:string}={}
 export const ENVLIST=()=>{
-  console.log(('ENVLIST\n'))
+  // console.log(('ENVLIST\n'))
   
   const envDetails=env?.split(',').reduce((acc,cv)=>{
     const [name,value]=cv.split('=')
@@ -10,9 +10,9 @@ export const ENVLIST=()=>{
     envs[name.toLowerCase()]=value
     return acc
   },'')||''
-  console.log(envs);
+  // console.log(envs);
   
-  console.log((envDetails))
+  // console.log((envDetails))
 }
 
 

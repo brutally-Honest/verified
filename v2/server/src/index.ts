@@ -14,5 +14,5 @@ configureDB()
 app.use(express.json())
 app.use('/v2',logger,Router,errorHandler)
 app.listen(PORT, () => {
-  console.log(chalk.bgGreen.bold(`[SERVER] : Server running on port ${PORT} `));
+  console.log(`[PORT] :`,chalk.bgGreen(` ${PORT} `))
 });
