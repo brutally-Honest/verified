@@ -63,3 +63,4 @@ The members can also request the gaurd for a video call to view the visitors. Vi
 | Password Encryption          | BcryptJs                                      |
 | User Authentication          | JWT                                           |
 | Server-side Validation       | Express-Validator                             |
+
